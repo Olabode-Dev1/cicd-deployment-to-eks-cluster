@@ -22,14 +22,14 @@ pipeline {
         }
         stage('Code Quality Scan') {
             steps {
-                withSonarQubeEnv('sonar-qube') {
+                withSonarQubeEnv('sonar-qube') { // Ensure 'sonar-qube' matches Jenkins configuration
                     sh "mvn -f SampleWebApp/pom.xml sonar:sonar"
                 }
             }
         }
         stage('Quality Gate') {
             steps {
-                waitForQualityGate abortPipeline: true
+                waitForQualityGate abortPipeline: true // Requires SonarQube webhook setup in Jenkins
             }
         }
         stage('Logging into AWS ECR') {
@@ -70,7 +70,10 @@ pipeline {
             }
             steps {
                 script {
+                    // Update kubeconfig to interact with the EKS cluster
                     sh 'aws eks update-kubeconfig --name myAppp-eks-cluster --region us-east-1'
+
+                    // Deploy using Helm
                     sh """
                     helm upgrade --install \
                         --set image.repository=${REPOSITORY_URI} \
